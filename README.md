@@ -1,15 +1,16 @@
 ﻿# ParsaJS
 Library to parse and evaluate arithmetic expressions without eval()
+
 Supports basic operators [ ** * / % + - ( ) ] and variables.
 
 Order of operations: BEMDAS
 
 ## Usage
 ```javascript
-import { Parsa } from "parsa.js"
+import { Parsa } from "parsa.mjs"
 const myParser = new Parsa()
 
-myParser.parse( "a*(20/8)*b,{"a":3, "b":2}" )
+myParser.parse( "a*(20/8)*b,{"a":3,"b":2}" )
 	.then((res) => myParser.evaluateAll(res.items))
 	.then((res) => console.log(res))
 	
@@ -23,6 +24,7 @@ myParser.parse( "a*(20/8)*b,{"a":3, "b":2}" )
 ```
 ### Methods
 **parse(string)**
+
 Parses an input string for evaluation
 
 	Params: string
@@ -33,6 +35,7 @@ Parses an input string for evaluation
 		}
 	
 **evaluateAll(items)**
+
 Evaluates the expression string
 
 	Params: array of expression items
@@ -44,6 +47,7 @@ Evaluates the expression string
 		  items: [{ ... }] 
 		}
 **evaluateNext(items)**
+
 Evaluates the next block according to order of operations
 
 	Params: array of expression items
@@ -55,13 +59,12 @@ Evaluates the next block according to order of operations
 		  items: [{ ... }] 
 		}
 **getSourceString()**
-Returns the original input string give to parser
+
+Returns the original input string
 
 **getSourceItems()**
-Returns a promise with an array of parsed expression items
 
-**clearItems()**
-Clears current parsed items, blocks and evaluation
+Returns a promise with an array of parsed expression items
 
 *License:* MIT
  
