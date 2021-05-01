@@ -66,10 +66,6 @@ Returns the original input string give to parser
 
 Returns a promise with an array of parsed expression items
 
-**clearItems()**
-
-Clears current parsed items, blocks and evaluation
-
 *License:* MIT
  
 
