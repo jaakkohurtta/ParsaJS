@@ -10,7 +10,7 @@ Order of operations: BEMDAS
 import { Parsa } from "parsa.js"
 const myParser = new Parsa()
 
-myParser.parse( "a*(20/8)*b,{"a":3, "b":2}" )
+myParser.parse( "a*(20/8)*b,{"a":3,"b":2}" )
 	.then((res) => myParser.evaluateAll(res.items))
 	.then((res) => console.log(res))
 	
