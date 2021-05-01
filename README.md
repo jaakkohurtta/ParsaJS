@@ -60,7 +60,7 @@ Evaluates the next block according to order of operations
 		}
 **getSourceString()**
 
-Returns the original input string give to parser
+Returns the original input string
 
 **getSourceItems()**
 
