@@ -1,5 +1,6 @@
 ﻿# ParsaJS
 Library to parse and evaluate arithmetic expressions without eval()
+
 Supports basic operators [ ** * / % + - ( ) ] and variables.
 
 Order of operations: BEMDAS
