@@ -1,7 +1,7 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.0.1
+ * @version     : 1.0.2
  * @license     : MIT
  */
 
@@ -34,16 +34,25 @@ function helloOperator(char, prevChar, nextChar) {
   }
 }
  
-const Parsa = function() {
-  let blocks = [];               // Array of block data, { id, prio, startIndex, endIndex }
-  let currentBlockId = 0;        // ID of next-in-line for evaluation
-  let evaluation = 0;            // Final result of evaluated expression
-  let originalExpression = "";   // String of original expression
+export default class Parsa {
+  _items;
+  _blocks;               // Array of block data, { id, prio, startIndex, endIndex }
+  _currentBlockId;       // ID of next-in-line for evaluation
+  _evaluation;           // Final result of evaluated expression
+  _originalExpression;   // String of original expression
 
-  //#region Private methods
+  constructor() {
+    this._items = [];
+    this._blocks = [];
+    this._currentBlockId = 0;
+    this._evaluation = 0;
+    this._originalExpression = "";
+  }
+
+  //#region "Private" methods
 
   // Returns new expression item
-  const addItem = function(value, type) {
+  _addItem(value, type) {
     return { 
       "value": value, 
       "type": type 
@@ -51,15 +60,15 @@ const Parsa = function() {
   }
 
   // Clear items
-  const clearItems = function() {
-    blocks = [];
-    currentBlockId = 0;
-    evaluation = 0;
-    originalExpression = "";
+  _clearItems() {
+    this._blocks = [];
+    this._currentBlockId = 0;
+    this._evaluation = 0;
+    this._originalExpression = "";
   }
 
   // Evaluator for array of expression items
-  const evaluate = async function(items, startIndex, endIndex) {
+  async _evaluate(items, startIndex, endIndex) {
     let operatorCount = 0;
 
     // Remove parenthesis if found
@@ -121,7 +130,7 @@ const Parsa = function() {
   }
 
   // Validator for arrays of expression items
-  const validate = function(items) {
+  _validate(items) {
     // Validate parsed numbers
     items.forEach(item => {
       if(item.type === "number") {
@@ -160,31 +169,32 @@ const Parsa = function() {
   }
 
   // Get block data
-  const getBlocks = function(items) {
-    blocks = [];
+  _getBlocks(items) {
+    this._blocks = [];
     let block = 0,
         blockStartIndex = 0;
 
     items.forEach((item, index) => {
       if(item.value === "(") { 
-        blocks.push({ "id": blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index - 1 });
+        this._blocks.push({ "id": this._blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index - 1 });
         blockStartIndex = index;
         block++;
       } else if(item.value === ")") {
-        blocks.push({ "id": blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });   
+        this._blocks.push({ "id": this._blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });   
         index != items.lenght - 1 ? blockStartIndex = index + 1 : blockStartIndex = index;
         block--;
       } else if(item.value != ")" && index === items.length - 1) {
-        blocks.push({ "id": blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });  
+        this._blocks.push({ "id": this._blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });  
       } 
     });
   }
+  
   // Find a block with highest prio to solve next
-  const getNextBlock = function() {
+  _getNextBlock() {
     let highestPrio = 0;
     let id;
 
-    blocks.forEach((block, index) => {
+    this._blocks.forEach((block, index) => {
       if(block.prio >= highestPrio) {
         highestPrio = block.prio;
         id = index + 1;
@@ -195,177 +205,184 @@ const Parsa = function() {
   
   //#endregion
 
-  //#region Public methods
+  //#region "Public" methods
 
-  return {
-    // Parse a string into an array
-    parse: async function(inputString) {
-      
-      clearItems();
-      inputString.trim();
+  // Parse a string into an array
+  async parse(inputString) {
+    
+    this._clearItems();
+    inputString.trim();
 
-      // Helpers
-      let expression,               // expression string
-          item,                     // current item
-          items = [],               // array of parsed items
-          variables, variableKeys,  // variables & keys
-          firstIndex = 0,           // first index of next item in expression string
-          separatorIndex = 0,       // separator index between expression and variables
-          prevChar, char, nextChar, // helpers for validation
-          error = false;            // flag for expression validity
+    // Helpers
+    let expression,               // expression string
+        item,                     // current item
+        items = [],               // array of parsed items
+        variables, variableKeys,  // variables & keys
+        firstIndex = 0,           // first index of next item in expression string
+        separatorIndex = 0,       // separator index between expression and variables
+        prevChar, char, nextChar, // helpers for validation
+        error = false;            // flag for expression validity
 
-      // Search for separator
-      for(let i = 0; i < inputString.length; i++) {
-        if(inputString[i] === ",") {
-          separatorIndex = i;
-          break;
-        }
+    // Search for separator
+    for(let i = 0; i < inputString.length; i++) {
+      if(inputString[i] === ",") {
+        separatorIndex = i;
+        break;
       }
+    }
 
-      // Parse variables and slice expression into new string for parsing
-      if(separatorIndex != 0) {
-        variables = JSON.parse(inputString.slice(separatorIndex + 1, inputString.length));
-        variableKeys = Object.keys(variables);
-        expression = inputString.slice(0, separatorIndex);
-      } else {
-        expression = inputString;
-        separatorIndex = expression.length;
-      }
+    // Parse variables and slice expression into new string for parsing
+    if(separatorIndex != 0) {
+      variables = JSON.parse(inputString.slice(separatorIndex + 1, inputString.length));
+      variableKeys = Object.keys(variables);
+      expression = inputString.slice(0, separatorIndex);
+    } else {
+      expression = inputString;
+      separatorIndex = expression.length;
+    }
 
-      // Loop for parsing the input string
-      for(let i = 0; i < separatorIndex; i++) {
-        prevChar = expression[i - 1];
-        char = expression[i];
-        nextChar = expression[i + 1];
+    // Loop for parsing the input string
+    for(let i = 0; i < separatorIndex; i++) {
+      prevChar = expression[i - 1];
+      char = expression[i];
+      nextChar = expression[i + 1];
 
-        // If char at i is an operator, slice the string and the operator to items
-        if(helloOperator(char, prevChar, nextChar)) {   
+      // If char at i is an operator, slice the string and the operator to items
+      if(helloOperator(char, prevChar, nextChar)) {   
 
-          // Add number to array
-          if(i - firstIndex > 0) {
-            item = expression.slice(firstIndex, i);
-            if(validVariables.test(item)) {
-              variableKeys.forEach(key => {
-                item === key ? item = variables[key].toString() : null;
-              });
-            } 
-            items.push(addItem(item, "number"));
-          }
-
-          // Operator
-          item = expression[i];
-          // Check for double * and combine them to one operator if found
-          if(items.length > 1) {
-            if(item === "*" && items[items.length - 1].value === "*") {
-              items.pop();
-              item = "**";
-            }
-          } 
-          // Add operator to array
-          expression[i] === "(" || expression[i] === ")" ? 
-                          items.push(addItem(item, "parenthesis")) : items.push(addItem(item, "operator"));
-
-          // Set first index as operator position + 1 for next item
-          firstIndex = i+1;
-        }
-
-        // Check if we reach the end of expression string to parse the last item
-        if(i === expression.length - 1 && i - firstIndex >= 0) {
-          item = expression.slice(firstIndex, i+1);
+        // Add number to array
+        if(i - firstIndex > 0) {
+          item = expression.slice(firstIndex, i);
           if(validVariables.test(item)) {
             variableKeys.forEach(key => {
               item === key ? item = variables[key].toString() : null;
             });
           } 
-          items.push(addItem(item, "number"));
+          items.push(this._addItem(item, "number"));
         }
-      }
 
-      // Validation
-      try {
-        validate(items);
-      } 
-      catch(err) {
-        // Clear items and push and an error to the array
-        items = [];
-        blocks = [];
-        error = true;
-
-        items.push(addItem(err, "error"))
-      }
-      finally {
-        // Store original expression string
-        originalExpression = inputString;
-
-        let message;
-        error ? message = "Parser error." : message = "Parsing complete.";
-        return {
-          msg: message,
-          items: items
-        }
-      }
-    },
-    
-    evaluateNext: async function(items) {
-      getBlocks(items);
-      currentBlockId = getNextBlock();
-
-      let blockResult = 0,
-          startIndex, 
-          endIndex;
-
-      // Get start and end points of items[] for evaluation
-      blocks.forEach(block => {
-        if(block.id === currentBlockId) {
-          startIndex = block.startIndex;
-          endIndex = block.endIndex;
-        }
-      });
-
-      blockResult = await evaluate(items, startIndex, endIndex);
-      getBlocks(items);
-      
-      if(items.length === 1) {
-        evaluation = parseFloat(blockResult);
-        return { 
-          complete: true,
-          eval: parseFloat(blockResult),
-          items: items,
-          blocks: blocks
-        }
-      } else {
-        return {
-          complete: false,
-          eval: parseFloat(blockResult),
-          items: items,     
-          blocks: blocks
-        }
-      }
-    },
-    evaluateAll: async function(items) {
-      let result = {};
-
-      do {
-        await this.evaluateNext(items).then(res => {
-          result = {
-            complete: res.complete,
-            eval: evaluation,
-            items: res.items,
-            blocks: res.blocks,
+        // Operator
+        item = expression[i];
+        // Check for double * and combine them to one operator if found
+        if(items.length > 1) {
+          if(item === "*" && items[items.length - 1].value === "*") {
+            items.pop();
+            item = "**";
           }
-        });
-      } while (items.length > 1);
+        } 
+        // Add operator to array
+        expression[i] === "(" || expression[i] === ")" ? 
+                        items.push(this._addItem(item, "parenthesis")) : items.push(this._addItem(item, "operator"));
 
-      return result;
-    },
-    getSourceString() {
-      return originalExpression;
-    },
-    async getSourceItems() {
-      let res = this.parse(originalExpression);
+        // Set first index as operator position + 1 for next item
+        firstIndex = i+1;
+      }
 
-      return (await res).items;
+      // Check if we reach the end of expression string to parse the last item
+      if(i === expression.length - 1 && i - firstIndex >= 0) {
+        item = expression.slice(firstIndex, i+1);
+        if(validVariables.test(item)) {
+          variableKeys.forEach(key => {
+            item === key ? item = variables[key].toString() : null;
+          });
+        } 
+        items.push(this._addItem(item, "number"));
+      }
+    }
+
+    // Validation
+    try {
+      this._validate(items);
+    } 
+    catch(err) {
+      // Clear items and push and an error to the array
+      items = [];
+      this._blocks = [];
+      error = true;
+
+      items.push(this._addItem(err, "error"))
+    }
+    finally {
+      // Store original expression string
+      this._originalExpression = inputString;
+
+      // Store items
+      items.forEach(item => {
+        this._items.push(this._addItem(item.value, item.type));
+      })
+
+      let message;
+      error ? message = "Parser error." : message = "Parsing complete.";
+      return {
+        msg: message,
+        items: items
+      }
     }
   }
+  
+  async evaluateNext(items) {
+    this._getBlocks(items);
+    this._currentBlockId = this._getNextBlock();
+
+    let blockResult = 0,
+        startIndex, 
+        endIndex;
+
+    // Get start and end points of items[] for evaluation
+    this._blocks.forEach(block => {
+      if(block.id === this._currentBlockId) {
+        startIndex = block.startIndex;
+        endIndex = block.endIndex;
+      }
+    });
+
+    blockResult = await this._evaluate(items, startIndex, endIndex);
+    this._getBlocks(items);
+    
+    if(items.length === 1) {
+      this._evaluation = parseFloat(blockResult);
+      return { 
+        complete: true,
+        eval: parseFloat(blockResult),
+        items: items,
+        blocks: this._blocks
+      }
+    } else {
+      return {
+        complete: false,
+        eval: parseFloat(blockResult),
+        items: items,     
+        blocks: this._blocks
+      }
+    }
+  }
+
+  async evaluateAll(items) {
+    let result = {};
+
+    do {
+      await this.evaluateNext(items).then(res => {
+        result = {
+          complete: res.complete,
+          eval: this._evaluation,
+          items: res.items,
+          blocks: res.blocks,
+        }
+      });
+    } while (items.length > 1);
+
+    return result;
+  }
+
+  getSourceString() {
+    return this._originalExpression;
+  }
+
+  getSourceItems() {
+    // let res = this.parse(this._originalExpression);
+
+    return this._items;
+  }
+
   //#endregion
-}();
+}

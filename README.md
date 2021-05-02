@@ -7,7 +7,7 @@ Order of operations: BEMDAS
 
 ## Usage
 ```javascript
-import { Parsa } from "parsa.mjs"
+import Parsa from "parsa.js"
 const myParser = new Parsa()
 
 myParser.parse( 'a*(20/8)*b,{"a":3,"b":2}' )
@@ -64,9 +64,6 @@ Returns the original input string
 
 **getSourceItems()**
 
-Returns a promise with an array of parsed expression items
+Returns an array of parsed expression items
 
 *License:* MIT
- 
-
-				
