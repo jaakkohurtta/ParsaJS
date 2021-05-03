@@ -1,0 +1,26 @@
+{
+  "name": "parsa-js",
+  "version": "1.0.2",
+  "description": "Library to parse and evaluate arithmetic expressions without eval()",
+  "main": "parsa.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaakkohurtta/ParsaJS.git"
+  },
+  "keywords": [
+    "parse",
+    "evaluate",
+    "arithmetic",
+    "expressions"
+  ],
+  "author": "Jaakko Hurtta",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jaakkohurtta/ParsaJS/issues"
+  },
+  "homepage": "https://github.com/jaakkohurtta/ParsaJS#readme"
+}
