@@ -1,7 +1,7 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.0.5
+ * @version     : 1.0.6
  * @license     : MIT
  */
 
@@ -163,7 +163,6 @@ export default class Parsa {
       }
     });
     if(pCount % 2 != 0) {
-      equationIsValid = false;
       throw `Parser error: Odd number of parenthesis.`;
     }
   }
