@@ -11,8 +11,8 @@ npm i parsa-js
 ```
 
 ```javascript
-const myParser = new Parsa()
 import Parsa from "parsa-js"
+const myParser = new Parsa()
 
 myParser.parse( 'a*(20/8)*b,{"a":3,"b":2}' )
 	.then(res => myParser.evaluateAll(res.items))
