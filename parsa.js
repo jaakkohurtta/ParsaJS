@@ -1,7 +1,7 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.0.7
+ * @version     : 1.0.8
  * @license     : MIT
  */
 
