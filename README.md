@@ -7,11 +7,11 @@ Order of operations: BEMDAS
 
 ## Usage
 ```
-npm i parsa-js
+npm i @jaakkohurtta/parsajs
 ```
 
 ```javascript
-import Parsa from "parsa-js"
+import Parsa from "@jaakkohurtta/parsajs"
 const myParser = new Parsa()
 
 let parse = await myParser.parse('a*(20/8)*b,{"a":3,"b":2}')
