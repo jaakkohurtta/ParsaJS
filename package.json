@@ -1,6 +1,6 @@
 {
   "name": "@jaakkohurtta/parsajs",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Library to parse and evaluate arithmetic expressions without eval()",
   "main": "parsa.js",
   "type": "module",
