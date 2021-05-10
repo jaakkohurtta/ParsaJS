@@ -1,7 +1,7 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.0.8
+ * @version     : 1.0.9
  * @license     : MIT
  */
 
@@ -308,13 +308,16 @@ export default class Parsa {
       // Store items
       items.forEach(item => {
         this._items.push(this._addItem(item.value, item.type));
-      })
+      });
+      // Get blocks
+      this._getBlocks(items);
 
       let message;
       error ? message = "Parser error." : message = "Parsing complete.";
       return {
         msg: message,
-        items: items
+        items: items,
+        blocks: this._blocks
       }
     }
   }

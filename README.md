@@ -36,7 +36,8 @@ Parses an input string for evaluation
 	Returns a promise: 
 		{ 
 		  msg: string, 
-		  items: [{ value, type}, ...] 
+		  items: [{ value, type}, ...],
+      blocks: [{ id, prio, startIndex, endIndex }, ...]
 		}
 	
 **evaluateAll(items)**
