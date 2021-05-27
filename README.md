@@ -37,7 +37,7 @@ Parses an input string for evaluation
 		{ 
 		  msg: string, 
 		  items: [{ value, type}, ...],
-      blocks: [{ id, prio, startIndex, endIndex }, ...]
+      	  blocks: [{ id, prio, startIndex, endIndex }, ...]
 		}
 	
 **evaluateAll(items)**
