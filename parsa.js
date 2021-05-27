@@ -1,7 +1,7 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.0.9
+ * @version     : 1.0.10
  * @license     : MIT
  */
 
@@ -35,18 +35,12 @@ function helloOperator(char, prevChar, nextChar) {
 }
  
 export default class Parsa {
-  _items;
-  _blocks;               // Array of block data, { id, prio, startIndex, endIndex }
-  _currentBlockId;       // ID of next-in-line for evaluation
-  _evaluation;           // Final result of evaluated expression
-  _originalExpression;   // String of original expression
-
   constructor() {
     this._items = [];
-    this._blocks = [];
-    this._currentBlockId = 0;
-    this._evaluation = 0;
-    this._originalExpression = "";
+    this._blocks = [];              // Array of block data, { id, prio, startIndex, endIndex }
+    this._currentBlockId = 0;       // ID of next-in-line for evaluation
+    this._evaluation = 0;           // Final result of evaluated expression
+    this._originalExpression = "";  // String of original expression
   }
 
   //#region "Private" methods
@@ -234,7 +228,7 @@ export default class Parsa {
     if(separatorIndex != 0) {
       variables = JSON.parse(inputString.slice(separatorIndex + 1, inputString.length));
       variableKeys = Object.keys(variables);
-      expression = inputString.slice(0, separatorIndex);
+      expression = inputString.slice(0, separatorIndex);      
     } else {
       expression = inputString;
       separatorIndex = expression.length;
@@ -288,6 +282,7 @@ export default class Parsa {
         items.push(this._addItem(item, "number"));
       }
     }
+    
 
     // Validation
     try {
