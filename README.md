@@ -1,4 +1,4 @@
-﻿# ParsaJS
+﻿# ParsaJS - https://parsajs-demo.netlify.app/
 Library to parse and evaluate arithmetic expressions without eval()
 
 Supports basic operators [ ** * / % + - ( ) ] and variables.
