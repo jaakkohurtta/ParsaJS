@@ -1,7 +1,7 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.0.10
+ * @version     : 1.1.0
  * @license     : MIT
  */
 
@@ -375,8 +375,6 @@ export default class Parsa {
   }
 
   getSourceItems() {
-    // let res = this.parse(this._originalExpression);
-
     return this._items;
   }
 
