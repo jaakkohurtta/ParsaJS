@@ -5,6 +5,8 @@
  * @license     : MIT
  */
 
+import { Item, Block, Parse, Evaluation } from "./types"
+
 // regExp for valid operators
 const validOperators = /^[\+\-(\*\*?)\/\%\(\)]$/;
 // regExp for valid number
@@ -13,7 +15,7 @@ const validNumbers = /^\-?\d+\.?(\d+)?$/;
 const validVariables = /^[a-zA-Z]$/i;
 
 // Test character for valid operators
-function helloOperator(char, prevChar, nextChar) {
+function helloOperator(char: string, prevChar: string, nextChar: string) {
   // If expression starts with - return false to for negative number
   if(prevChar === undefined && char === "-") {
     return false;
@@ -35,18 +37,24 @@ function helloOperator(char, prevChar, nextChar) {
 }
 
 export default class Parsa {
+  private items: Item[];
+  private blocks: Block[];
+  private currentBlockId: number;
+  private evaluation: number;
+  private originalExpression: string;
+
   constructor() {
-    this._items = [];
-    this._blocks = [];              // Array of block data, { id, prio, startIndex, endIndex }
-    this._currentBlockId = 0;       // ID of next-in-line for evaluation
-    this._evaluation = 0;           // Final result of evaluated expression
-    this._originalExpression = "";  // String of original expression
+    this.items = [];
+    this.blocks = [];              // Array of block data, { id, prio, startIndex, endIndex }
+    this.currentBlockId = 0;       // ID of next-in-line for evaluation
+    this.evaluation = 0;           // Final result of evaluated expression
+    this.originalExpression = "";  // String of original expression
   }
 
   //#region "Private" methods
 
   // Returns new expression item
-  _addItem(value, type) {
+  private addItem(value: string, type: string): Item {
     return {
       "value": value,
       "type": type
@@ -54,15 +62,15 @@ export default class Parsa {
   }
 
   // Clear items
-  _clearItems() {
-    this._blocks = [];
-    this._currentBlockId = 0;
-    this._evaluation = 0;
-    this._originalExpression = "";
+  private clearItems() {
+    this.blocks = [];
+    this.currentBlockId = 0;
+    this.evaluation = 0;
+    this.originalExpression = "";
   }
 
   // Evaluator for array of expression items
-  _evaluate(items, startIndex, endIndex) {
+  private evaluate(items: Item[], startIndex: number, endIndex: number): string {
     let operatorCount = 0;
 
     // Remove parenthesis if found
@@ -124,7 +132,7 @@ export default class Parsa {
   }
 
   // Validator for arrays of expression items
-  _validate(items) {
+  private validate(items: Item[]) {
     // Validate parsed numbers
     items.forEach(item => {
       if(item.type === "number") {
@@ -162,32 +170,32 @@ export default class Parsa {
   }
 
   // Get block data
-  _getBlocks(items) {
-    this._blocks = [];
+  private getBlocks(items: Item[]) {
+    this.blocks = [];
     let block = 0,
         blockStartIndex = 0;
 
     items.forEach((item, index) => {
       if(item.value === "(") {
-        this._blocks.push({ "id": this._blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index - 1 });
+        this.blocks.push({ "id": this.blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index - 1 });
         blockStartIndex = index;
         block++;
       } else if(item.value === ")") {
-        this._blocks.push({ "id": this._blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });
-        index != items.lenght - 1 ? blockStartIndex = index + 1 : blockStartIndex = index;
+        this.blocks.push({ "id": this.blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });
+        index != items.length - 1 ? blockStartIndex = index + 1 : blockStartIndex = index;
         block--;
       } else if(item.value != ")" && index === items.length - 1) {
-        this._blocks.push({ "id": this._blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });
+        this.blocks.push({ "id": this.blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });
       }
     });
   }
 
   // Find a block with highest prio to solve next
-  _getNextBlock() {
+  private getNextBlock(): number {
     let highestPrio = 0;
-    let id;
+    let id = 0;
 
-    this._blocks.forEach((block, index) => {
+    this.blocks.forEach((block, index) => {
       if(block.prio >= highestPrio) {
         highestPrio = block.prio;
         id = index + 1;
@@ -201,19 +209,22 @@ export default class Parsa {
   //#region "Public" methods
 
   // Parse a string into an array
-  parse(inputString) {
+  parse(inputString: string): Parse {
 
-    this._clearItems();
+    this.clearItems();
     inputString.trim();
 
     // Helpers
     let expression,               // expression string
-        item,                     // current item
-        items = [],               // array of parsed items
-        variables, variableKeys,  // variables & keys
+        item: string,             // current item
+        items: Item[] = [],       // array of parsed items
+        variables: Record<string, number>, 
+        variableKeys: string[] | undefined, 
         firstIndex = 0,           // first index of next item in expression string
         separatorIndex = 0,       // separator index between expression and variables
-        prevChar, char, nextChar, // helpers for validation
+        prevChar: string, 
+        char: string, 
+        nextChar: string,         // helpers for validation
         error = false;            // flag for expression validity
 
     // Search for separator
@@ -247,11 +258,11 @@ export default class Parsa {
         if(i - firstIndex > 0) {
           item = expression.slice(firstIndex, i);
           if(validVariables.test(item)) {
-            variableKeys.forEach(key => {
+            variableKeys?.forEach(key => {
               item === key ? item = variables[key].toString() : null;
             });
           }
-          items.push(this._addItem(item, "number"));
+          items.push(this.addItem(item, "number"));
         }
 
         // Operator
@@ -265,7 +276,7 @@ export default class Parsa {
         }
         // Add operator to array
         expression[i] === "(" || expression[i] === ")" ?
-                        items.push(this._addItem(item, "parenthesis")) : items.push(this._addItem(item, "operator"));
+                        items.push(this.addItem(item, "parenthesis")) : items.push(this.addItem(item, "operator"));
 
         // Set first index as operator position + 1 for next item
         firstIndex = i+1;
@@ -275,93 +286,93 @@ export default class Parsa {
       if(i === expression.length - 1 && i - firstIndex >= 0) {
         item = expression.slice(firstIndex, i+1);
         if(validVariables.test(item)) {
-          variableKeys.forEach(key => {
+          variableKeys?.forEach(key => {
             item === key ? item = variables[key].toString() : null;
           });
         }
-        items.push(this._addItem(item, "number"));
+        items.push(this.addItem(item, "number"));
       }
     }
 
 
     // Validation
     try {
-      this._validate(items);
+      this.validate(items);
     }
-    catch(err) {
+    catch(err: unknown) {
       // Clear items and push and an error to the array
       items = [];
-      this._blocks = [];
+      this.blocks = [];
       error = true;
 
-      items.push(this._addItem(err, "error"))
+      items.push(this.addItem(err as string, "error"))
     }
     finally {
       // Store original expression string
-      this._originalExpression = inputString;
+      this.originalExpression = inputString;
 
       // Store items
       items.forEach(item => {
-        this._items.push(this._addItem(item.value, item.type));
+        this.items.push(this.addItem(item.value, item.type));
       });
       // Get blocks
-      this._getBlocks(items);
+      this.getBlocks(items);
 
       let message;
       error ? message = "Parser error." : message = "Parsing complete.";
       return {
         msg: message,
         items: items,
-        blocks: this._blocks
+        blocks: this.blocks,
       }
     }
   }
 
-  evaluateNext(items) {
-    this._getBlocks(items);
-    this._currentBlockId = this._getNextBlock();
+  evaluateNext(items: Item[]): Evaluation {
+    this.getBlocks(items);
+    this.currentBlockId = this.getNextBlock();
 
-    let blockResult = 0,
-        startIndex,
-        endIndex;
+    let blockResult: string,
+        startIndex = 0,
+        endIndex = 0;
 
     // Get start and end points of items[] for evaluation
-    this._blocks.forEach(block => {
-      if(block.id === this._currentBlockId) {
+    this.blocks.forEach(block => {
+      if(block.id === this.currentBlockId) {
         startIndex = block.startIndex;
         endIndex = block.endIndex;
       }
     });
 
-    blockResult = this._evaluate(items, startIndex, endIndex);
-    this._getBlocks(items);
+    blockResult = this.evaluate(items, startIndex, endIndex);
+    this.getBlocks(items);
 
     if(items.length === 1) {
-      this._evaluation = parseFloat(blockResult);
+      this.evaluation = parseFloat(blockResult);
       return {
         complete: true,
         eval: parseFloat(blockResult),
         items: items,
-        blocks: this._blocks
+        blocks: this.blocks
       }
     } else {
       return {
         complete: false,
         eval: parseFloat(blockResult),
         items: items,
-        blocks: this._blocks
+        blocks: this.blocks
       }
     }
   }
 
-  evaluateAll(items) {
-    let result = {};
+  evaluateAll(items: Item[]): Evaluation {
+    let result: Evaluation;
 
     do {
       let res = this.evaluateNext(items)
       result = {
         complete: res.complete,
-        eval: this._evaluation,
+        eval: this.evaluation,
         items: res.items,
         blocks: res.blocks,
       }
@@ -371,11 +382,11 @@ export default class Parsa {
   }
 
   getSourceString() {
-    return this._originalExpression;
+    return this.originalExpression;
   }
 
   getSourceItems() {
-    return this._items;
+    return this.items;
   }
 
   //#endregion
