@@ -17,8 +17,8 @@ export default class Parsa {
     private evaluate;
     private validate;
     private getBlocks;
-    private getNextBlock;
     parse(inputString: string): Parse;
+    getNextBlock(): number;
     evaluateNext(items: Item[]): Evaluation;
     evaluateAll(items: Item[]): Evaluation;
     getSourceString(): string;

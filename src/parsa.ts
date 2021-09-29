@@ -190,20 +190,6 @@ export default class Parsa {
     });
   }
 
-  // Find a block with highest prio to solve next
-  private getNextBlock(): number {
-    let highestPrio = 0;
-    let id = 0;
-
-    this.blocks.forEach((block, index) => {
-      if(block.prio >= highestPrio) {
-        highestPrio = block.prio;
-        id = index + 1;
-      }
-    });
-    return id;
-  }
-
   //#endregion
 
   //#region "Public" methods
@@ -326,6 +312,20 @@ export default class Parsa {
         blocks: this.blocks,
       }
     }
+  }
+
+  // Find a block with highest prio to solve next
+  getNextBlock(): number {
+    let highestPrio = 0;
+    let id = 0;
+
+    this.blocks.forEach((block, index) => {
+      if(block.prio >= highestPrio) {
+        highestPrio = block.prio;
+        id = index + 1;
+      }
+    });
+    return id;
   }
 
   evaluateNext(items: Item[]): Evaluation {
