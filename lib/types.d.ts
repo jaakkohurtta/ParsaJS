@@ -8,8 +8,15 @@ export declare type Block = {
     startIndex: number;
     endIndex: number;
 };
-export declare type Variable = {
-    key: string;
-    value: string;
+export declare type Parse = {
+    msg: string;
+    items: Item[];
+    blocks: Block[];
+};
+export declare type Evaluation = {
+    complete: boolean;
+    eval: number;
+    items: Item[];
+    blocks: Block[];
 };
 //# sourceMappingURL=types.d.ts.map
