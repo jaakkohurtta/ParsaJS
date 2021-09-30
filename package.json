@@ -1,9 +1,8 @@
 {
   "name": "@jaakkohurtta/parsajs",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "description": "Library to parse and evaluate arithmetic expressions without eval()",
   "main": "lib/parsa.js",
-  "type": "module",
   "scripts": {
     "build": "tsc -p .",
     "test": "jest"
@@ -29,6 +28,7 @@
     "@types/jest": "^27.0.2",
     "jest": "^27.2.4",
     "ts-jest": "^27.0.5",
+    "ts-node": "^10.2.1",
     "typescript": "^4.4.3"
   }
 }

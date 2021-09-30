@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es5",                                     
-    "module": "commonjs",                                
+    "target": "ES5",                                     
+    "module": "ES6",                                
     "declaration": true,      /* Generate .d.ts files from TypeScript and JavaScript files in your project. */
     "declarationMap": true,   /* Create sourcemaps for d.ts files. */
     "sourceMap": true,        /* Create source map files for emitted JavaScript files. */
@@ -11,7 +11,8 @@
     "strict": true,                                      
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
-  "include": [
-    "./src"
+  "files": [
+    "src/parsa.ts",
+    "src/types.ts"
   ]
 }
