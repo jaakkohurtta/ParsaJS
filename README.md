@@ -37,7 +37,7 @@ Parses an input string for evaluation
 	Params: a string
 	Returns an object: 
 		{ 
-      success: boolean,
+      		  success: boolean,
 		  msg: string, 
 		}
 	
