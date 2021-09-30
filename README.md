@@ -80,7 +80,7 @@ Returns the id of the next block to be evaluated
 
 **myParser.getBlocks**
 
-Return an array of parsed items organized in blocks
+Returns an array of parsed items organized in blocks
 
 ### Tests
 ```
