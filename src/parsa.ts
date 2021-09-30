@@ -1,17 +1,14 @@
 /** ParsaJS ***
  * @description : Library to parse and evaluate arithmetic expressions without eval()
  * @author      : Jaakko Hurtta
- * @version     : 1.1.0
+ * @version     : 2.0.0
  * @license     : MIT
  */
 
-import { Item, Block, Parse, Evaluation } from "./types"
+import { ParsaItem, ParsaBlock, Parse, Evaluation, ParsaItemType } from "./types"
 
-// regExp for valid operators
 const validOperators = /^[\+\-(\*\*?)\/\%\(\)]$/;
-// regExp for valid number
 const validNumbers = /^\-?\d+\.?(\d+)?$/;
-// regExp for variable
 const validVariables = /^[a-zA-Z]$/i;
 
 // Test character for valid operators
@@ -37,88 +34,93 @@ function helloOperator(char: string, prevChar: string, nextChar: string) {
 }
 
 export default class Parsa {
-  private items: Item[];
-  private blocks: Block[];
+  private items: ParsaItem[];
+  private blocks: ParsaBlock[];
   private currentBlockId: number;
+  private nextBlockId: number;
   private evaluation: number;
   private originalExpression: string;
+  private parserMessage: string;
 
   constructor() {
     this.items = [];
     this.blocks = [];              // Array of block data, { id, prio, startIndex, endIndex }
     this.currentBlockId = 0;       // ID of next-in-line for evaluation
+    this.nextBlockId = 0;
     this.evaluation = 0;           // Final result of evaluated expression
     this.originalExpression = "";  // String of original expression
+    this.parserMessage = "";
   }
 
   //#region "Private" methods
 
   // Returns new expression item
-  private addItem(value: string, type: string): Item {
+  private addItem(type: ParsaItemType, value: string): ParsaItem {
     return {
+      "type": type,
       "value": value,
-      "type": type
     }
   }
 
   // Clear items
   private clearItems() {
     this.blocks = [];
+    this.items = [];
     this.currentBlockId = 0;
     this.evaluation = 0;
     this.originalExpression = "";
   }
 
   // Evaluator for array of expression items
-  private evaluate(items: Item[], startIndex: number, endIndex: number): string {
+  private evaluate(startIndex: number, endIndex: number): string {
     let operatorCount = 0;
 
     // Remove parenthesis if found
-    if(items[startIndex].type === "parenthesis" && items[endIndex].type === "parenthesis") {
-      items.splice(startIndex, 1);
-      items.splice(endIndex - 1, 1);
+    if(this.items[startIndex].type === ParsaItemType.PARENTHESIS && this.items[endIndex].type === ParsaItemType.PARENTHESIS) {
+      this.items.splice(startIndex, 1);
+      this.items.splice(endIndex - 1, 1);
       endIndex -= 2;
     }
 
     // Get the amount of operators for evaluation loop
     for(let i = startIndex; i <= endIndex; i++) {
-      items[i].type === "operator" ? operatorCount++ : null;
+      this.items[i].type === ParsaItemType.OPERATOR ? operatorCount++ : null;
     }
 
     evaluation:
     while(operatorCount > 0) {
       for(let i = startIndex; i <= endIndex; i++) {
-        if(items[i].value === "**") {
-          items[i - 1].value = (parseFloat(items[i - 1].value) ** parseFloat(items[i + 1].value)).toString();
-          items.splice(i, 2);
+        if(this.items[i].value === "**") {
+          this.items[i - 1].value = (parseFloat(this.items[i - 1].value) ** parseFloat(this.items[i + 1].value)).toString();
+          this.items.splice(i, 2);
           endIndex -= 2;
           operatorCount--;
           continue evaluation;
         }
       }
       for(let i = startIndex; i <= endIndex; i++) {
-        if(items[i].value === "*" || items[i].value === "/" || items[i].value === "%") {
-          if(items[i].value === "*") {
-            items[i - 1].value = (parseFloat(items[i - 1].value) * parseFloat(items[i + 1].value)).toString();
-          } else if(items[i].value === "/") {
-            items[i - 1].value = (parseFloat(items[i - 1].value) / parseFloat(items[i + 1].value)).toString();
+        if(this.items[i].value === "*" || this.items[i].value === "/" || this.items[i].value === "%") {
+          if(this.items[i].value === "*") {
+            this.items[i - 1].value = (parseFloat(this.items[i - 1].value) * parseFloat(this.items[i + 1].value)).toString();
+          } else if(this.items[i].value === "/") {
+            this.items[i - 1].value = (parseFloat(this.items[i - 1].value) / parseFloat(this.items[i + 1].value)).toString();
           } else {
-            items[i - 1].value = (parseFloat(items[i - 1].value) % parseFloat(items[i + 1].value)).toString();
+            this.items[i - 1].value = (parseFloat(this.items[i - 1].value) % parseFloat(this.items[i + 1].value)).toString();
           }
-          items.splice(i, 2);
+          this.items.splice(i, 2);
           endIndex -= 2;
           operatorCount--;
           continue evaluation;
         }
       }
       for(let i = startIndex; i <= endIndex; i++) {
-        if(items[i].value === "+" || items[i].value === "-") {
-          if(items[i].value === "+") {
-            items[i - 1].value = (parseFloat(items[i - 1].value) + parseFloat(items[i + 1].value)).toString();
+        if(this.items[i].value === "+" || this.items[i].value === "-") {
+          if(this.items[i].value === "+") {
+            this.items[i - 1].value = (parseFloat(this.items[i - 1].value) + parseFloat(this.items[i + 1].value)).toString();
           } else {
-            items[i - 1].value = (parseFloat(items[i - 1].value) - parseFloat(items[i + 1].value)).toString();
+            this.items[i - 1].value = (parseFloat(this.items[i - 1].value) - parseFloat(this.items[i + 1].value)).toString();
           }
-          items.splice(i, 2);
+          this.items.splice(i, 2);
           endIndex -= 2;
           operatorCount--;
           continue evaluation;
@@ -128,14 +130,14 @@ export default class Parsa {
     }
 
     // Return the evaluated result
-    return items[startIndex].value;
+    return this.items[startIndex].value;
   }
 
   // Validator for arrays of expression items
-  private validate(items: Item[]) {
+  private validate(items: ParsaItem[]) {
     // Validate parsed numbers
     items.forEach(item => {
-      if(item.type === "number") {
+      if(item.type === ParsaItemType.NUMBER) {
         if(!validNumbers.test(item.value)) {
           throw `Parser error: Not a valid number. (${item.value})`;
         }
@@ -143,16 +145,16 @@ export default class Parsa {
     });
     // Validate operator placement
     for(let i = 0; i < items.length; i++) {
-      if(items[0].type === "operator") {
+      if(items[0].type === ParsaItemType.OPERATOR) {
         throw `Parser error: Misplaced operator at first index.`;
       }
-      if(items[items.length - 1].type === "operator") {
+      if(items[items.length - 1].type === ParsaItemType.OPERATOR) {
         throw `Parser error: Misplaced operator at last index.`;
       }
       if(i > 0 && i < items.length - 1) {
-        if(items[i].type === "operator" && items[i - 1].type === "operator") {
+        if(items[i].type === ParsaItemType.OPERATOR && items[i - 1].type === ParsaItemType.OPERATOR) {
           throw `Parser error: Misplaced operator.`;
-        } else if(items[i].type === "operator" && items[i + 1].type === "operator") {
+        } else if(items[i].type === ParsaItemType.OPERATOR && items[i + 1].type === ParsaItemType.OPERATOR) {
           throw `Parser error: Misplaced operator.`;
         }
       }
@@ -160,7 +162,7 @@ export default class Parsa {
     // Validate parenthesis
     let pCount = 0;
     items.forEach(item => {
-      if(item.type === "parenthesis") {
+      if(item.type === ParsaItemType.PARENTHESIS) {
         pCount++;
       }
     });
@@ -170,26 +172,40 @@ export default class Parsa {
   }
 
   // Get block data
-  private getBlocks(items: Item[]) {
+  private parseBlocks() {
     this.blocks = [];
     let block = 0,
         blockStartIndex = 0;
 
-    items.forEach((item, index) => {
+    this.items.forEach((item, index) => {
       if(item.value === "(") {
         this.blocks.push({ "id": this.blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index - 1 });
         blockStartIndex = index;
         block++;
       } else if(item.value === ")") {
         this.blocks.push({ "id": this.blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });
-        index != items.length - 1 ? blockStartIndex = index + 1 : blockStartIndex = index;
+        index != this.items.length - 1 ? blockStartIndex = index + 1 : blockStartIndex = index;
         block--;
-      } else if(item.value != ")" && index === items.length - 1) {
+      } else if(item.value != ")" && index === this.items.length - 1) {
         this.blocks.push({ "id": this.blocks.length + 1, "prio": block, "startIndex": blockStartIndex, "endIndex": index });
       }
     });
   }
 
+  // Find a block with highest prio to solve next
+  private getNextBlock() {
+    let highestPrio = 0;
+    let id = 0;
+
+    this.blocks.forEach((block, index) => {
+      if(block.prio >= highestPrio) {
+        highestPrio = block.prio;
+        id = index + 1;
+      }
+    });
+    this.nextBlockId = id;
+  }
+  
   //#endregion
 
   //#region "Public" methods
@@ -201,9 +217,8 @@ export default class Parsa {
     inputString.trim();
 
     // Helpers
-    let expression,               // expression string
-        item: string,             // current item
-        items: Item[] = [],       // array of parsed items
+    let expression: string,
+        item: string,  
         variables: Record<string, number>, 
         variableKeys: string[] | undefined, 
         firstIndex = 0,           // first index of next item in expression string
@@ -248,21 +263,20 @@ export default class Parsa {
               item === key ? item = variables[key].toString() : null;
             });
           }
-          items.push(this.addItem(item, "number"));
+          this.items.push(this.addItem(ParsaItemType.NUMBER, item));
         }
 
         // Operator
         item = expression[i];
         // Check for double * and combine them to one operator if found
-        if(items.length > 1) {
-          if(item === "*" && items[items.length - 1].value === "*") {
-            items.pop();
+        if(this.items.length > 1) {
+          if(item === "*" && this.items[this.items.length - 1].value === "*") {
+            this.items.pop();
             item = "**";
           }
         }
         // Add operator to array
-        expression[i] === "(" || expression[i] === ")" ?
-                        items.push(this.addItem(item, "parenthesis")) : items.push(this.addItem(item, "operator"));
+        expression[i] === "(" || expression[i] === ")" ? this.items.push(this.addItem(ParsaItemType.PARENTHESIS, item)) : this.items.push(this.addItem(ParsaItemType.OPERATOR, item));
 
         // Set first index as operator position + 1 for next item
         firstIndex = i+1;
@@ -276,61 +290,38 @@ export default class Parsa {
             item === key ? item = variables[key].toString() : null;
           });
         }
-        items.push(this.addItem(item, "number"));
+        this.items.push(this.addItem(ParsaItemType.NUMBER, item));
       }
     }
-
 
     // Validation
     try {
-      this.validate(items);
+      this.validate(this.items);
+      this.parserMessage = "Parsing complete."
     }
     catch(err: unknown) {
       // Clear items and push and an error to the array
-      items = [];
+      this.items = [];
       this.blocks = [];
       error = true;
 
-      items.push(this.addItem(err as string, "error"))
+      this.parserMessage = err as string;
     }
     finally {
-      // Store original expression string
       this.originalExpression = inputString;
+      this.parseBlocks();
 
-      // Store items
-      items.forEach(item => {
-        this.items.push(this.addItem(item.value, item.type));
-      });
-      // Get blocks
-      this.getBlocks(items);
-
-      let message;
-      error ? message = "Parser error." : message = "Parsing complete.";
       return {
-        msg: message,
-        items: items,
-        blocks: this.blocks,
+        success: !error ? true : false, 
+        msg: this.parserMessage,
       }
     }
   }
 
-  // Find a block with highest prio to solve next
-  getNextBlock(): number {
-    let highestPrio = 0;
-    let id = 0;
-
-    this.blocks.forEach((block, index) => {
-      if(block.prio >= highestPrio) {
-        highestPrio = block.prio;
-        id = index + 1;
-      }
-    });
-    return id;
-  }
-
-  evaluateNext(items: Item[]): Evaluation {
-    this.getBlocks(items);
-    this.currentBlockId = this.getNextBlock();
+  evaluateNext(): Evaluation {
+    this.parseBlocks();
+    this.getNextBlock();
+    this.currentBlockId = this.nextBlockId;
 
     let blockResult: string,
         startIndex = 0,
@@ -344,49 +335,57 @@ export default class Parsa {
       }
     });
 
-    blockResult = this.evaluate(items, startIndex, endIndex);
-    this.getBlocks(items);
+    blockResult = this.evaluate(startIndex, endIndex);
+    this.parseBlocks();
 
-    if(items.length === 1) {
+    if(this.items.length === 1) {
       this.evaluation = parseFloat(blockResult);
       return {
         complete: true,
         eval: parseFloat(blockResult),
-        items: items,
+        items: this.items,
         blocks: this.blocks
       }
     } else {
       return {
         complete: false,
         eval: parseFloat(blockResult),
-        items: items,
+        items: this.items,
         blocks: this.blocks
       }
     }
   }
 
-  evaluateAll(items: Item[]): Evaluation {
+  evaluateAll(): Evaluation {
     let result: Evaluation;
 
     do {
-      let res = this.evaluateNext(items)
+      let res = this.evaluateNext()
       result = {
         complete: res.complete,
         eval: this.evaluation,
         items: res.items,
         blocks: res.blocks,
       }
-    } while (items.length > 1);
+    } while (this.items.length > 1);
 
     return result;
   }
 
-  getSourceString() {
+  get getSourceString() {
     return this.originalExpression;
   }
 
-  getSourceItems() {
+  get getNextBlockId() {
+    return this.nextBlockId;
+  }
+
+  get getItems() {
     return this.items;
+  }
+
+  get getBlocks() {
+    return this.blocks;
   }
 
   //#endregion

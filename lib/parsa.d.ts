@@ -4,24 +4,28 @@
  * @version     : 1.1.0
  * @license     : MIT
  */
-import { Item, Parse, Evaluation } from "./types";
+import { ParsaItem, ParsaBlock, Parse, Evaluation } from "./types";
 export default class Parsa {
     private items;
     private blocks;
     private currentBlockId;
+    private nextBlockId;
     private evaluation;
     private originalExpression;
+    private parserMessage;
     constructor();
     private addItem;
     private clearItems;
     private evaluate;
     private validate;
-    private getBlocks;
+    private parseBlocks;
+    private getNextBlock;
     parse(inputString: string): Parse;
-    getNextBlock(): number;
-    evaluateNext(items: Item[]): Evaluation;
-    evaluateAll(items: Item[]): Evaluation;
-    getSourceString(): string;
-    getSourceItems(): Item[];
+    evaluateNext(): Evaluation;
+    evaluateAll(): Evaluation;
+    get getSourceString(): string;
+    get getNextBlockId(): number;
+    get getItems(): ParsaItem[];
+    get getBlocks(): ParsaBlock[];
 }
 //# sourceMappingURL=parsa.d.ts.map

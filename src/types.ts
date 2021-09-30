@@ -1,9 +1,16 @@
-export type Item = {
-    value: string,
-    type: string
+export enum ParsaItemType {
+  NUMBER = "number",
+  OPERATOR = "operator",
+  PARENTHESIS = "parenthesis",
+  ERROR = "error"
 }
 
-export type Block = {
+export type ParsaItem = {
+  type: ParsaItemType,
+  value: string
+}
+
+export type ParsaBlock = {
     id: number,
     prio: number,
     startIndex: number,
@@ -11,14 +18,13 @@ export type Block = {
 }
 
 export type Parse = {
+    success: boolean,
     msg: string,
-    items: Item[],
-    blocks: Block[]
 }
 
 export type Evaluation = {
     complete: boolean,
     eval: number,
-    items: Item[],
-    blocks: Block[]
+    items: ParsaItem[],
+    blocks: ParsaBlock[]
 }
