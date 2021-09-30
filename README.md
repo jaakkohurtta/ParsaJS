@@ -105,7 +105,7 @@ PASS  tests/parsa.test.ts
     ✓ getSourceString returns correct value
     ✓ getItems returns correct values (1 ms)
     ✓ getBlocks returns correct values
-    ✓ getNextBlockId return correct value (1 ms)
+    ✓ getNextBlockId returns correct value (1 ms)
 
 Test Suites: 1 passed, 1 total
 Tests:       16 passed, 16 total
